@@ -1,0 +1,29 @@
+---
+import type { ACTION_ERROR_CODES } from "astro:actions";
+import ExperienceItem from "./ExperienceItem.astro";
+
+const EXPERIENCE = [
+  {
+    date: "Diciembre 2023 - Actualidad",
+    title: "Desarrollador Backend - OATI UD",
+    description:
+      "Implementé APIs REST utilizando Go para optimizar la gestión de datos y mejorar el rendimiento del backend. Además, diseñé interfaces de usuario con Angular, enfocándome en la arquitectura de microfrontends, lo que permitió una mayor modularidad y escalabilidad en la aplicación. Aseguré una integración eficiente entre backend y frontend, mejorando la funcionalidad general del sistema y facilitando su escalabilidad para futuras expansiones.",
+  },
+  {
+    date: "Diciembre 2022 - Mayo 2023",
+    title: "Desarrollador Junior - Jerrejerre S.A.S",
+    description:
+      "Gestioné y mantuve servidores Linux, asegurando su óptimo funcionamiento y disponibilidad. Realicé el despliegue de aplicaciones en contenedores utilizando Docker Compose y Docker Stack, facilitando la implementación y escalabilidad de los servicios. Además, optimicé las operaciones en servidores web como Apache, Nginx y OpenLiteSpeed, mejorando su rendimiento y estabilidad. Desarrollé un módulo personalizado para Joomla CMS y realicé el mantenimiento de sitios en Drupal, garantizando su actualización y seguridad continuas.",
+  },
+];
+---
+
+<ol class="relative border-s border-gray-200 ml-2">
+  {
+    EXPERIENCE.map((experience) => (
+      <li class="mb-10 ms-4">
+        <ExperienceItem {...experience} />
+      </li>
+    ))
+  }
+</ol>
