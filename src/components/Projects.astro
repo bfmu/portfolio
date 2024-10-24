@@ -1,18 +1,18 @@
 ---
 import ProjectCard from "./ProjectCard.astro";
-import { proyectos } from "../data/proyectos";
-import type { Proyecto } from "../types";
+import { projects } from "../data/projects";
+import type { Project } from "../types";
 
 ---
 
 <div class="grid grid-cols-2 gap-2">
-  { proyectos.map((proyecto: Proyecto) => (
+  { projects.map((proyecto: Project) => (
     <ProjectCard
-      nombre={proyecto.nombre}
+      name={proyecto.name}
       descripcion={proyecto.descripcion}
-      enlaces={proyecto.enlaces}
-      tecnologias={proyecto.tecnologias}
-      imagen={proyecto.imagen}
+      links={proyecto.links}
+      technologies={proyecto.technologies}
+      image={proyecto.image}
     />
   ))}
 </div>

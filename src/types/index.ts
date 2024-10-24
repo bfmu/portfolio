@@ -1,15 +1,15 @@
-type Proyecto = {
-    nombre: string;
+type Project = {
+    name: string;
     descripcion: string;
-    enlaces: Enlace[];
-    tecnologias: string[];
-    imagen: string;
+    links: Link[];
+    technologies: string[];
+    image: ImageMetadata;
 }
 
-type Enlace = {
-    nombre: string;
+type Link = {
+    name: string;
     url: string;
-    icono: string;
+    icon: string;
 }
 
-export type { Proyecto, Enlace }
+export type { Project, Link }
