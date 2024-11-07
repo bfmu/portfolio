@@ -6,7 +6,7 @@ import type { Project } from "../types";
 ---
 
 <div class="grid grid-cols-2 gap-2">
-  { projects.map((proyecto: Project) => (
+  { projects.slice().reverse().map((proyecto: Project) => (
     <ProjectCard
       name={proyecto.name}
       descripcion={proyecto.descripcion}
