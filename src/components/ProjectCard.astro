@@ -21,29 +21,22 @@ function cutDescription(description: string): string {
 
 <div class="relative max-w-sm overflow-hidden rounded-lg shadow">
   <div class="absolute inset-0 bg-white/5 backdrop-blur-md"></div>
-  <a href="#" class="relative z-10">
+  <div class="relative z-10">
     <Image src={image} alt="image" />
-  </a>
+  </div>
   <div class="relative p-5 z-10">
-    <a href="#">
-      <h5 class="mb-2 text-2xl font-bold tracking-tight">
-        {name}
-      </h5>
-    </a>
+    <h5 class="mb-2 text-2xl font-bold tracking-tight">
+      {name}
+    </h5>
     <p class="mb-3 font-normal">
       {cutDescription(descripcion)}
     </p>
     <div class="flex flex-wrap gap-2">
       {
         links.map((enlace) => (
-          <ButtonProjectCard href={enlace.url}>
-            {enlace.name}
-          </ButtonProjectCard>
-            
-            
+          <ButtonProjectCard href={enlace.url}>{enlace.name}</ButtonProjectCard>
         ))
       }
     </div>
-    
   </div>
 </div>
