@@ -1,0 +1,19 @@
+---
+import SocialNetworkButton from "../components/SocialNetworkButton.astro";
+import GithubIcon from "../assets/icons/Github.astro";
+import LinkedInIcon from "../assets/icons/LinkedIn.astro";
+import EmailIcon from "../assets/icons/Email.astro";
+---
+
+<ul class="flex flex-row gap-4 py-4 flex-wrap">
+    <li>
+      <SocialNetworkButton href="https://www.linkedin.com/in/bfmunozm96/">
+        <LinkedInIcon class="size-6" /> LinkedIn
+      </SocialNetworkButton>
+    </li>
+    <li>
+      <SocialNetworkButton href="mailto:bfmumo@gmail.com">
+        <EmailIcon class="size-6" /> bfmumo@gmail.com
+      </SocialNetworkButton>
+    </li>
+  </ul>
