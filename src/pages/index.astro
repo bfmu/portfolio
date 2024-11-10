@@ -8,11 +8,13 @@ import LinkedInIcon from "../assets/icons/LinkedIn.astro";
 import EmailIcon from "../assets/icons/Email.astro";
 import Experience from "../components/Experience.astro";
 import ExperienceIcon from "../assets/icons/Experience.astro";
+import ConectIcon from '../assets/icons/Conect.astro'
 import Projects from "../components/Projects.astro";
+import Contact from '../components/Contact.astro';
 ---
 
 <Layout
-  title="Portafolio de Bryan Muñoz - Desarrollador y Programador con 2 años de experiencia"
+  title="Bryan Portfolio - Desarrollador y Programador con 2 años de experiencia"
   description="Contrata a Bryan Muñoz, un desarrollador y programador con 2 años de experiencia en Bogotá, Colombia. Especializado en crear soluciones de calidad."
 >
   <main class="px-4">
@@ -67,7 +69,12 @@ import Projects from "../components/Projects.astro";
         <ExperienceIcon class="size-8" /> Proyectos
       </h2>
       <Projects/>
+    </SectionContainer>
+    <SectionContainer id="contacto">
+      <h2 class="text-2xl semi-bold text-white  pt-6 flex gap-x-3 items-center">
+        <ConectIcon class="size-8" /> Contáctame
+      </h2>
+      <Contact />
+    </SectionContainer>
   </main>
 </Layout>
-
-<style></style>
