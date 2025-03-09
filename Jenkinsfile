@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "${env.DOCKER_USER}/mi_portfolio:${env.BUILD_NUMBER}"
-        DOCKER_REGISTRY = ${env.DOCKER_USER}
-        DEPLOY_SERVER = ${env.DEPLOY_SERVER}
-        APP_CONTAINER_NAME = ${env.APP_CONTAINER_NAME}
-        APP_PORT = ${env.APP_CONTAINER_NAME}
+        DOCKER_REGISTRY = "${env.DOCKER_USER}"
+        DEPLOY_SERVER = "${env.DEPLOY_SERVER}"
+        APP_CONTAINER_NAME = "${env.APP_CONTAINER_NAME}"
+        APP_PORT = "${env.APP_CONTAINER_NAME}"
     }
 
     stages {
