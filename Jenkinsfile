@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'node:lts' // Usa una imagen con Node.js y npm preinstalado
+            image 'node:lts'
         }
     }
     stages {
@@ -25,12 +25,12 @@ pipeline {
                 sh 'docker build -t mi-app:${BUILD_NUMBER} .'
             }
         }
-        stage('Push Docker Image') {
-            steps {
-                withDockerRegistry([credentialsId: 'docker-hub-cred']) {
-                    sh 'docker push mi-app:${BUILD_NUMBER}'
-                }
-            }
-        }
+        // stage('Push Docker Image') {
+        //     steps {
+        //         withDockerRegistry([credentialsId: 'docker-hub-cred']) {
+        //             sh 'docker push mi-app:${BUILD_NUMBER}'
+        //         }
+        //     }
+        // }
     }
 }
