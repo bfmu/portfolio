@@ -2,7 +2,6 @@ pipeline {
     agent {
         docker {
             image 'node:lts'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     stages {
@@ -13,7 +12,7 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh 'pnpm install'
             }
         }
         stage('Build') {
@@ -21,17 +20,26 @@ pipeline {
                 sh 'npm run build'
             }
         }
+        stage('Save Build Artifacts') {
+            steps {
+                stash includes: '**', name: 'build_artifacts'
+            }
+        }
+    }
+}
+
+pipeline {
+    agent any  // Ahora ejecutamos en el host que tiene Docker
+    stages {
+        stage('Retrieve Build Artifacts') {
+            steps {
+                unstash 'build_artifacts'
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t mi-app:${BUILD_NUMBER} .'
             }
         }
-        // stage('Push Docker Image') {
-        //     steps {
-        //         withDockerRegistry([credentialsId: 'docker-hub-cred']) {
-        //             sh 'docker push mi-app:${BUILD_NUMBER}'
-        //         }
-        //     }
-        // }
     }
 }
