@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'github', url: 'git@github.com:bfmu/portfolio.git'
+                git branch: 'main', credentialsId: 'github', url: 'https://github.com/bfmu/portfolio.git'
             }
         }
         stage('Install Dependencies') {
