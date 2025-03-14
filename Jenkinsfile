@@ -2,6 +2,7 @@ pipeline {
     agent {
         docker {
             image 'node:lts'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     stages {
