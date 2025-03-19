@@ -1,25 +1,26 @@
 pipeline {
-    agent {
-        label 'docker-agent'
-    }
+    agent any
     stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', credentialsId: 'github', url: 'https://github.com/bfmu/portfolio.git'
+            }
+        }
         stage('Build Code') {
-            agent{
+            agent {
                 docker {
                     image 'node:lts'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Permite que Docker acceda al daemon
                 }
             }
             steps {
-                git branch: 'main', credentialsId: 'github', url: 'https://github.com/bfmu/portfolio.git'
                 sh 'npm install'
                 sh 'npm run build'
-                stash includes: '**', name: 'build_artifacts'
+                stash includes: 'dist/**', name: 'build_artifacts'
             }
         }
-        stage('Build and publish docker image') {
-            agent {
-                label 'docker-agent'
-            }
+        stage('Build and Publish Docker Image') {
+            agent any
             steps {
                 unstash 'build_artifacts'
                 sh 'docker build -t mi-app:${BUILD_NUMBER} .'
@@ -27,4 +28,3 @@ pipeline {
         }
     }
 }
-
