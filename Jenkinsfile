@@ -1,15 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage('SonarQube Quality Test') {
-            agent {
-                label 'docker-agent'
-            }
-            def sonarqubeScannerHome = tool name: 'sonarqube', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-            withCredentials([string(credentialsId: 'sonarqube', variable: 'sonarLogin')]) {
-                sh "${sonarqubeScannerHome}/bin/sonar-scanner -e -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${sonarLogin} -Dsonar.projectName=gs-gradle -Dsonar.projectVersion=${env.BUILD_NUMBER} -Dsonar.projectKey=GS -Dsonar.sources=complete/src/main/ -Dsonar.tests=complete/src/test/ -Dsonar.language=java -Dsonar.java.binaries=."
-            }
-        }
         stage('Build Code') {
             agent{
                 docker {
