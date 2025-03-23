@@ -57,10 +57,10 @@ pipeline {
                         // Comandos a ejecutar en el servidor remoto
                         def commands = """
                             cd docker/github/portfolio/
-                            docker-compose down
+                            docker compose down
                             echo 'TAG=${TAG}' > .env
-                            docker-compose pull
-                            docker-compose up -d
+                            docker compose pull
+                            docker compose up -d
                         """
                         
                         // Ejecuta los comandos en el servidor remoto
