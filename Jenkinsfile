@@ -36,5 +36,25 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Remote Server') {
+            steps {
+                script {
+                    def remote = [:]
+                    remote.name = 'Remote Server'
+                    remote.host = env.REMOTE_HOST
+                    remote.user = 'usuario_remoto' // Reemplaza con el nombre de usuario del servidor remoto
+                    remote.password = 'contraseña_remota' // Reemplaza con la contraseña del usuario remoto
+                    remote.allowAnyHosts = true
+                    
+                    sshCommand remote: remote, command: """
+                        docker login ${env.REGISTRY} -u <usuario> -p <contraseña>
+                        docker pull ${env.REGISTRY}/${IMAGE_NAME}:${TAG}
+                        docker stop ${IMAGE_NAME} || true
+                        docker rm ${IMAGE_NAME} || true
+                        docker run -d --name ${IMAGE_NAME} -p 80:80 ${REGISTRY}/${IMAGE_NAME}:${TAG}
+                    """
+                }
+            }
+        }
     }
 }

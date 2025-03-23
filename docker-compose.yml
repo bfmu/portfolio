@@ -1,14 +1,13 @@
 services:
   frontend:
-    build:
-      context: ./
+    image: reg.redflox.com/portfolio:${TAG}
     container_name: portfolio
     expose:
       - 4321
     ports:
       - "81:4321"
-    #networks:
-    #  - proxy
-#networks:
-#  proxy:
-#    external: true
+    networks:
+      - proxy
+networks:
+  proxy:
+    external: true
