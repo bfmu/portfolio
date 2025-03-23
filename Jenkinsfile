@@ -56,9 +56,9 @@ pipeline {
                         
                         // Comandos a ejecutar en el servidor remoto
                         def commands = """
-                            cd docker/github/portfolio/
-                            docker compose down || true
-                            docker compose pull || true
+                            cd /home/bryan/docker/github/portfolio
+                            docker compose down
+                            docker compose pull
                             docker compose up -d
                         """
                         
