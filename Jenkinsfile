@@ -1,5 +1,13 @@
 pipeline {
     agent any
+    environment {
+        REGISTRY = 'reg.redflox.com'
+        IMAGE_NAME = 'portfolio'
+        TAG = "${env.BUILD_NUMBER}"
+        REMOTE_USER = 'bryan'
+        REMOTE_HOST = 'bfmu.dev'
+        SSH_CREDENTIALS_ID = 'ssh-server-bfmudev'
+    }
     stages {
         stage('Checkout Code') {
             steps {
@@ -21,11 +29,6 @@ pipeline {
         }
         stage('Build and Publish Docker Image') {
             agent any
-            environment {
-                REGISTRY = 'reg.redflox.com' // O la IP si es remoto
-                IMAGE_NAME = 'portfolio'
-                TAG = "${env.BUILD_NUMBER}"
-            }
             steps {
                 unstash 'build_artifacts'
                 script {
@@ -39,20 +42,30 @@ pipeline {
         stage('Deploy to Remote Server') {
             steps {
                 script {
-                    def remote = [:]
-                    remote.name = 'Remote Server'
-                    remote.host = env.REMOTE_HOST
-                    remote.user = 'usuario_remoto' // Reemplaza con el nombre de usuario del servidor remoto
-                    remote.password = 'contraseña_remota' // Reemplaza con la contraseña del usuario remoto
-                    remote.allowAnyHosts = true
-                    
-                    sshCommand remote: remote, command: """
-                        docker login ${env.REGISTRY} -u <usuario> -p <contraseña>
-                        docker pull ${env.REGISTRY}/${IMAGE_NAME}:${TAG}
-                        docker stop ${IMAGE_NAME} || true
-                        docker rm ${IMAGE_NAME} || true
-                        docker run -d --name ${IMAGE_NAME} -p 80:80 ${REGISTRY}/${IMAGE_NAME}:${TAG}
-                    """
+                    // Recupera las credenciales almacenadas en Jenkins
+                    withCredentials([usernamePassword(credentialsId: env.SSH_CREDENTIALS_ID, passwordVariable: 'REMOTE_PASSWORD', usernameVariable: 'REMOTE_USER')]) {
+                        def remote = [:]
+                        remote.name = 'Remote Server'
+                        remote.host = env.REMOTE_HOST
+                        remote.user = REMOTE_USER
+                        remote.password = REMOTE_PASSWORD
+                        remote.allowAnyHosts = true
+                        
+                        // Define el contenido del archivo .env
+                        def envContent = "TAG=${TAG}\n"
+                        
+                        // Comandos a ejecutar en el servidor remoto
+                        def commands = """
+                            cd docker/github/portfolio/
+                            docker-compose down
+                            echo 'TAG=${TAG}' > .env
+                            docker-compose pull
+                            docker-compose up -d
+                        """
+                        
+                        // Ejecuta los comandos en el servidor remoto
+                        sshCommand remote: remote, command: commands
+                    }
                 }
             }
         }
