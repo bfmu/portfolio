@@ -21,9 +21,19 @@ pipeline {
         }
         stage('Build and Publish Docker Image') {
             agent any
+            environment {
+                REGISTRY = 'reg.redflox.com' // O la IP si es remoto
+                IMAGE_NAME = 'portfolio'
+                TAG = "${env.BUILD_NUMBER}"
+            }
             steps {
                 unstash 'build_artifacts'
-                sh 'docker build -t mi-app:${BUILD_NUMBER} .'
+                script {
+                    docker.withRegistry("https://${env.REGISTRY}", 'docker-registry-credentials') {
+                        def image = docker.build("${REGISTRY}/${IMAGE_NAME}:${TAG}")
+                        image.push()
+                    }
+                }
             }
         }
     }
