@@ -3,7 +3,7 @@ pipeline {
     environment {
         REGISTRY = 'reg.redflox.com'
         IMAGE_NAME = 'portfolio'
-        TAG = "${env.BUILD_NUMBER}"
+        TAG = "latest"
         REMOTE_USER = 'bryan'
         REMOTE_HOST = 'bfmu.dev'
         SSH_CREDENTIALS_ID = 'ssh-server-bfmudev'
@@ -57,9 +57,8 @@ pipeline {
                         // Comandos a ejecutar en el servidor remoto
                         def commands = """
                             cd docker/github/portfolio/
-                            docker compose down
-                            echo 'TAG=${TAG}' > .env
-                            docker compose pull
+                            docker compose down || true
+                            docker compose pull || true
                             docker compose up -d
                         """
                         
