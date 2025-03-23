@@ -60,8 +60,6 @@ pipeline {
                             docker compose down || echo '⚠️ docker compose down falló'
                             docker compose pull || echo '❌ docker compose pull falló'
                             docker compose up -d || echo '❌ docker compose up falló'
-                            echo '✅ Comandos terminados, código de salida: $?' || true
-                            exit 0
                         """
                         
                         // Ejecuta los comandos en el servidor remoto
