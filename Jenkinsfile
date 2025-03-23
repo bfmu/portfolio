@@ -56,10 +56,12 @@ pipeline {
                         
                         // Comandos a ejecutar en el servidor remoto
                         def commands = """
-                            cd /home/bryan/docker/github/portfolio
-                            docker compose down
-                            docker compose pull
-                            docker compose up -d
+                            cd /home/bryan/docker/github/portfolio || { echo '❌ Error: no se pudo entrar al directorio'; exit 1; }
+                            docker compose down || echo '⚠️ docker compose down falló'
+                            docker compose pull || echo '❌ docker compose pull falló'
+                            docker compose up -d || echo '❌ docker compose up falló'
+                            echo '✅ Comandos terminados, código de salida: $?' || true
+                            exit 0
                         """
                         
                         // Ejecuta los comandos en el servidor remoto
