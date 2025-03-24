@@ -42,26 +42,37 @@ pipeline {
         stage('Deploy to Remote Server') {
             steps {
                 script {
-                    // Recupera las credenciales almacenadas en Jenkins
-                    withCredentials([usernamePassword(credentialsId: env.SSH_CREDENTIALS_ID, passwordVariable: 'REMOTE_PASSWORD', usernameVariable: 'REMOTE_USER')]) {
+                    // Recupera las credenciales SSH y las del Docker Registry
+                    withCredentials([
+                        usernamePassword(credentialsId: env.SSH_CREDENTIALS_ID, passwordVariable: 'REMOTE_PASSWORD', usernameVariable: 'REMOTE_USER'),
+                        usernamePassword(credentialsId: 'docker-registry-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')
+                    ]) {
                         def remote = [:]
                         remote.name = 'Remote Server'
                         remote.host = env.REMOTE_HOST
                         remote.user = REMOTE_USER
                         remote.password = REMOTE_PASSWORD
                         remote.allowAnyHosts = true
-                        
-                        // Define el contenido del archivo .env
-                        def envContent = "TAG=${TAG}\n"
-                        
+
                         // Comandos a ejecutar en el servidor remoto
                         def commands = """
+                            set -x
                             cd /home/bryan/docker/github/portfolio || { echo '❌ Error: no se pudo entrar al directorio'; exit 1; }
+
+                            echo 'TAG=${TAG}' > .env
+                            echo '[DEBUG] .env content:' && cat .env
+
+                            echo '🔐 Login al registry'
+                            echo "$DOCKER_PASS" | docker login reg.redflox.com -u "$DOCKER_USER" --password-stdin || { echo '❌ docker login falló'; exit 1; }
+
                             docker compose down || echo '⚠️ docker compose down falló'
                             docker compose pull || echo '❌ docker compose pull falló'
                             docker compose up -d || echo '❌ docker compose up falló'
+
+                            echo '✅ Despliegue finalizado'
+                            exit 0
                         """
-                        
+
                         // Ejecuta los comandos en el servidor remoto
                         sshCommand remote: remote, command: commands
                     }
