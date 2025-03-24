@@ -4,8 +4,8 @@ services:
     container_name: portfolio
     expose:
       - 4321
-    ports:
-      - "81:4321"
+    #ports:
+    #  - "81:4321"
     networks:
       - proxy
 networks:

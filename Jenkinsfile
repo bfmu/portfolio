@@ -58,14 +58,15 @@ pipeline {
                         def commands = """
                             set -x
                             cd /home/bryan/docker/github/portfolio || { echo '❌ Error: no se pudo entrar al directorio'; exit 1; }
+                            docker compose down || echo '⚠️ docker compose down falló'
+                            git pull || echo '❌ git pull falló.'
 
                             echo 'TAG=${TAG}' > .env
                             echo '[DEBUG] .env content:' && cat .env
 
                             echo '🔐 Login al registry'
                             echo "$DOCKER_PASS" | docker login reg.redflox.com -u "$DOCKER_USER" --password-stdin || { echo '❌ docker login falló'; exit 1; }
-
-                            docker compose down || echo '⚠️ docker compose down falló'
+                            
                             docker compose pull || echo '❌ docker compose pull falló'
                             docker compose up -d || echo '❌ docker compose up falló'
 
