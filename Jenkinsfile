@@ -14,8 +14,10 @@ pipeline {
         stage('Initialize') {
             steps {
                 script {
-                    // Obtener el SHA del commit actual para las notificaciones
-                    COMMIT_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    // Declaración correcta de la variable con 'def' dentro del bloque script
+                    def COMMIT_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    env.COMMIT_SHA = COMMIT_SHA // Almacenar en environment para uso posterior si es necesario
+                    
                     githubNotify description: 'Pipeline iniciado', 
                                  status: 'PENDING', 
                                  context: "${env.GITHUB_CONTEXT_PREFIX}/pipeline"
