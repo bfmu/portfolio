@@ -7,45 +7,32 @@ pipeline {
         REMOTE_USER = 'bryan'
         REMOTE_HOST = 'bfmu.dev'
         SSH_CREDENTIALS_ID = 'ssh-server-bfmudev'
-        GITHUB_CONTEXT_PREFIX = 'jenkins/portfolio' // Prefijo para todos los contextos
+        GITHUB_CONTEXT = 'jenkins/portfolio-deploy' // Contexto único para todas las notificaciones
     }
-    
+
     stages {
-        stage('Initialize') {
-            steps {
-                script {
-                    // Declaración correcta de la variable con 'def' dentro del bloque script
-                    def COMMIT_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                    env.COMMIT_SHA = COMMIT_SHA // Almacenar en environment para uso posterior si es necesario
-                    
-                    githubNotify description: 'Pipeline iniciado', 
-                                 status: 'PENDING', 
-                                 context: "${env.GITHUB_CONTEXT_PREFIX}/pipeline"
-                }
-            }
-        }
-        
         stage('Checkout Code') {
             steps {
-                githubNotify description: 'Obteniendo código fuente', 
-                             status: 'PENDING', 
-                             context: "${env.GITHUB_CONTEXT_PREFIX}/checkout"
                 script {
+                    githubNotify description: 'Iniciando checkout', 
+                                 status: 'PENDING', 
+                                 context: "${env.GITHUB_CONTEXT}/checkout"
+                    
                     try {
                         git branch: 'main', credentialsId: 'github', url: 'https://github.com/bfmu/portfolio.git'
-                        githubNotify description: 'Código obtenido exitosamente', 
+                        githubNotify description: 'Checkout completado', 
                                      status: 'SUCCESS', 
-                                     context: "${env.GITHUB_CONTEXT_PREFIX}/checkout"
+                                     context: "${env.GITHUB_CONTEXT}/checkout"
                     } catch (e) {
-                        githubNotify description: "Error en checkout: ${e.message}", 
+                        githubNotify description: "Checkout fallido: ${e.message}", 
                                      status: 'FAILURE', 
-                                     context: "${env.GITHUB_CONTEXT_PREFIX}/checkout"
-                        error("Checkout fallido: ${e.message}")
+                                     context: "${env.GITHUB_CONTEXT}/checkout"
+                        error("Checkout fallido")
                     }
                 }
             }
         }
-        
+
         stage('Build Code') {
             agent {
                 docker {
@@ -54,59 +41,61 @@ pipeline {
                 }
             }
             steps {
-                githubNotify description: 'Construyendo aplicación', 
-                             status: 'PENDING', 
-                             context: "${env.GITHUB_CONTEXT_PREFIX}/build"
                 script {
+                    githubNotify description: 'Construyendo aplicación', 
+                                 status: 'PENDING', 
+                                 context: "${env.GITHUB_CONTEXT}/build"
+                    
                     try {
                         sh 'npm install'
                         sh 'npm run build'
                         stash includes: 'dist/**', name: 'build_artifacts'
                         githubNotify description: 'Build exitoso', 
                                      status: 'SUCCESS', 
-                                     context: "${env.GITHUB_CONTEXT_PREFIX}/build"
+                                     context: "${env.GITHUB_CONTEXT}/build"
                     } catch (e) {
                         githubNotify description: "Build fallido: ${e.message}", 
                                      status: 'FAILURE', 
-                                     context: "${env.GITHUB_CONTEXT_PREFIX}/build"
-                        error("Build fallido: ${e.message}")
+                                     context: "${env.GITHUB_CONTEXT}/build"
+                        error("Build fallido")
                     }
                 }
             }
         }
-        
+
         stage('Build and Publish Docker Image') {
-            agent any
             steps {
-                githubNotify description: 'Publicando imagen Docker', 
-                             status: 'PENDING', 
-                             context: "${env.GITHUB_CONTEXT_PREFIX}/docker-push"
                 script {
+                    githubNotify description: 'Publicando imagen Docker', 
+                                 status: 'PENDING', 
+                                 context: "${env.GITHUB_CONTEXT}/docker"
+                    
                     try {
                         unstash 'build_artifacts'
                         docker.withRegistry("https://${env.REGISTRY}", 'docker-registry-credentials') {
                             def image = docker.build("${REGISTRY}/${IMAGE_NAME}:${TAG}")
                             image.push()
                         }
-                        githubNotify description: "Imagen ${IMAGE_NAME}:${TAG} publicada", 
+                        githubNotify description: 'Imagen publicada exitosamente', 
                                      status: 'SUCCESS', 
-                                     context: "${env.GITHUB_CONTEXT_PREFIX}/docker-push"
+                                     context: "${env.GITHUB_CONTEXT}/docker"
                     } catch (e) {
                         githubNotify description: "Error al publicar imagen: ${e.message}", 
                                      status: 'FAILURE', 
-                                     context: "${env.GITHUB_CONTEXT_PREFIX}/docker-push"
-                        error("Error al publicar imagen Docker: ${e.message}")
+                                     context: "${env.GITHUB_CONTEXT}/docker"
+                        error("Error al publicar imagen Docker")
                     }
                 }
             }
         }
-        
+
         stage('Deploy to Remote Server') {
             steps {
-                githubNotify description: 'Desplegando en servidor remoto', 
-                             status: 'PENDING', 
-                             context: "${env.GITHUB_CONTEXT_PREFIX}/deploy"
                 script {
+                    githubNotify description: 'Iniciando despliegue', 
+                                 status: 'PENDING', 
+                                 context: "${env.GITHUB_CONTEXT}/deploy"
+                    
                     try {
                         withCredentials([
                             usernamePassword(credentialsId: env.SSH_CREDENTIALS_ID, 
@@ -125,51 +114,44 @@ pipeline {
 
                             def commands = """
                                 set -x
-                                cd /home/bryan/docker/github/portfolio || { echo '❌ Error: no se pudo entrar al directorio'; exit 1; }
-                                docker compose down || echo '⚠️ docker compose down falló'
-                                git pull || echo '❌ git pull falló.'
+                                cd /home/bryan/docker/github/portfolio || { echo '❌ Error: directorio no encontrado'; exit 1; }
+                                docker compose down || echo '⚠️ Advertencia: docker compose down falló'
+                                git pull || { echo '❌ Error: git pull falló'; exit 1; }
 
                                 echo 'TAG=${TAG}' > .env
-                                echo '[DEBUG] .env content:' && cat .env
-
-                                echo '🔐 Login al registry'
-                                echo "$DOCKER_PASS" | docker login reg.redflox.com -u "$DOCKER_USER" --password-stdin || { echo '❌ docker login falló'; exit 1; }
+                                echo "$DOCKER_PASS" | docker login reg.redflox.com -u "$DOCKER_USER" --password-stdin || { echo '❌ Error: docker login falló'; exit 1; }
                                 
-                                docker compose pull || echo '❌ docker compose pull falló'
-                                docker compose up -d || echo '❌ docker compose up falló'
-
-                                echo '✅ Despliegue finalizado'
-                                exit 0
+                                docker compose pull || { echo '❌ Error: docker compose pull falló'; exit 1; }
+                                docker compose up -d || { echo '❌ Error: docker compose up falló'; exit 1; }
                             """
 
                             sshCommand remote: remote, command: commands
-                            
-                            githubNotify description: 'Despliegue completado exitosamente', 
+                            githubNotify description: 'Despliegue completado', 
                                          status: 'SUCCESS', 
-                                         context: "${env.GITHUB_CONTEXT_PREFIX}/deploy"
+                                         context: "${env.GITHUB_CONTEXT}/deploy"
                         }
                     } catch (e) {
-                        githubNotify description: "Error en despliegue: ${e.message}", 
+                        githubNotify description: "Despliegue fallido: ${e.message}", 
                                      status: 'FAILURE', 
-                                     context: "${env.GITHUB_CONTEXT_PREFIX}/deploy"
-                        error("Despliegue fallido: ${e.message}")
+                                     context: "${env.GITHUB_CONTEXT}/deploy"
+                        error("Despliegue fallido")
                     }
                 }
             }
         }
     }
-    
+
     post {
         always {
             script {
                 def currentStatus = currentBuild.currentResult
-                def message = currentStatus == 'SUCCESS' ? 
+                def message = (currentStatus == 'SUCCESS') ? 
                     'Pipeline completado exitosamente' : 
-                    "Pipeline fallado - Estado: ${currentStatus}"
+                    "Pipeline fallado (Estado: ${currentStatus})"
                 
                 githubNotify description: message,
                              status: currentStatus,
-                             context: "${env.GITHUB_CONTEXT_PREFIX}/pipeline"
+                             context: "${env.GITHUB_CONTEXT}/summary"
             }
         }
     }
